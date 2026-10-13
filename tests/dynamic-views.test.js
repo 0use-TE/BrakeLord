@@ -7,16 +7,18 @@ test('一起起步，远离大部队的人单独显示；两对车辆可分别�
  const views=new DynamicViews(ids);assert.deepEqual(views.update(players([0,0,0,0]),1),[ids]);
  assert.deepEqual(views.update(players([0,2,4,100]),.2),[ids]);
  assert.deepEqual(views.update(players([0,2,4,100]),.2),[['P1','P2','P3'],['P4']]);
- assert.deepEqual(views.update(players([0,1,100,101]),.4),[['P1','P2'],['P3','P4']]);
+ assert.deepEqual(views.update(players([0,1,100,101]),.4),[['P1','P2'],['P3'],['P4']]);
+ assert.deepEqual(new DynamicViews(ids).update(players([0,1,100,101]),.4),[['P1','P2'],['P3','P4']]);
 });
-test('距离阈值有迟滞和缓冲，重新靠近才合并',()=>{
+test('分屏有时间缓冲，靠近或交错后也保持独立，下一局恢复共享',()=>{
  const views=new DynamicViews(ids.slice(0,2));
+ views.update(players([0,40]),.2);assert.equal(views.groups.length,1);
+ views.update(players([0,28]),.2);assert.equal(views.groups.length,1);
  views.update(players([0,40]),.4);assert.equal(views.groups.length,2);
- views.update(players([0,28]),1);assert.equal(views.groups.length,2);
- views.update(players([0,19]),.2);assert.equal(views.groups.length,2);
- views.update(players([0,21]),.2);assert.equal(views.groups.length,2);
- views.update(players([0,19]),.4);assert.equal(views.groups.length,1);
- views.update(players([0,31]),1);assert.equal(views.groups.length,1);
+ for(const positions of [[0,28],[0,19],[0,0],[10,0]]){views.update(players(positions),1);assert.equal(views.groups.length,2);}
+ assert.equal(new DynamicViews(ids.slice(0,2)).update(players([0,0]),1).length,1);
+ const pairs=new DynamicViews(ids);pairs.update(players([0,1,100,101]),1);
+ assert.deepEqual(pairs.update(players([0,2,1,3]),1),[['P1','P2'],['P3','P4']]);
 });
 test('翻车立即独立，健康玩家的分组不被翻车位置拉开；全部结束也保留画面',()=>{
  const views=new DynamicViews(ids),p=players([0,0,0,0]);p[0].crashed=true;

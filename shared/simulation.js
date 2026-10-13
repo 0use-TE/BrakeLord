@@ -21,7 +21,12 @@ export const VEHICLES = [
     description: '参考普通增程版 200 km/h、零百 5.1 秒。游戏中踏板耐受高，制动较缓。',
     quip: '车辆已领先，踏板正在独立探索。',
     car: { massKg: 2600, maxSpeedKmh: 200, launchAccel: 6.324, accelFalloffExp: 1.6 },
-    brake: { ...originalBrake, breakForceN: 2100, decelPerNewton: 10.6 / 2100 } }
+    brake: { ...originalBrake, breakForceN: 2100, decelPerNewton: 10.6 / 2100 } },
+  { id:'l9',name:'理想 L9',badge:'巡航',color:'#809583',shape:[1.015,1,1],scoreScale:1.305,
+    description:'大型家庭 SUV。游戏中踏板容错较大，制动表现居中。',
+    quip:'全家人的从容，暂时交给了路障。',
+    car:{massKg:2520,maxSpeedKmh:200,launchAccel:7.1,accelFalloffExp:1.5},
+    brake:{...originalBrake,breakForceN:1900,decelPerNewton:11.8/1900} }
 ];
 export function vehicleById(id) { return VEHICLES.find(v => v.id === id); }
 export function score(v, time) { return time <= 0 ? 0 : Math.round(v * v / time); }

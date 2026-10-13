@@ -1,3 +1,4 @@
+import {loadPlate,savePlate} from './shared/plates.js';
 import {VEHICLES,vehicleById} from './shared/simulation.js';
 import {setupLocal} from './local.js';
 const $=id=>document.getElementById(id);
@@ -9,7 +10,7 @@ function display(id,show){
 }
 function drawVehicles(){
  const index=VEHICLES.findIndex(v=>v.id===selected),v=VEHICLES[index];
- $('carName').textContent=v.name;$('carRole').textContent=v.badge;
+ $('editPlate').textContent=loadPlate(selected);$('carName').textContent=v.name;$('carRole').textContent=v.badge;
  $('statSpeed').textContent=v.car.maxSpeedKmh+' km/h';$('statTolerance').textContent=v.brake.breakForceN+' N';
  const strength=v.brake.breakForceN*v.brake.decelPerNewton;$('statBrake').textContent=strength.toFixed(1)+' m/sÂ²';
  $('speedBar').style.width=v.car.maxSpeedKmh/260*100+'%';$('toleranceBar').style.width=v.brake.breakForceN/2100*100+'%';$('brakeBar').style.width=strength/13*100+'%';
@@ -20,6 +21,11 @@ function cycleVehicle(direction){
  window.brakeGame?.select(selected);drawVehicles();
 }
 $('prevCar').onclick=()=>cycleVehicle(-1);$('nextCar').onclick=()=>cycleVehicle(1);
+const plateDialog=$('plateDialog');
+$('editPlate').onclick=()=>{$('plateInput').value=loadPlate(selected);plateDialog.showModal();$('plateInput').select();};
+$('closePlate').onclick=()=>plateDialog.close();
+$('plateForm').onsubmit=event=>{event.preventDefault();const plate=savePlate(selected,$('plateInput').value);window.brakeGame?.setPlate(plate);drawVehicles();plateDialog.close();};
+for(const type of ['keydown','keyup'])plateDialog.addEventListener(type,event=>event.stopPropagation());
 const readmeDialog=$('readmeDialog');
 $('openReadme').onclick=()=>readmeDialog.showModal();$('closeReadme').onclick=()=>readmeDialog.close();
 readmeDialog.addEventListener('click',event=>{
@@ -31,7 +37,7 @@ function enable(){loaded=true;$('solo').disabled=false;$('solo').textContent='å¼
 if(window.brakeGame?.ready)enable();else window.addEventListener('game-ready',enable,{once:true});
 drawVehicles();
 $('solo').onclick=()=>{
- if(!loaded||readmeDialog.open)return;window.brakeGame.select(selected);display('garage',false);
+ if(!loaded||(readmeDialog.open||plateDialog.open))return;window.brakeGame.select(selected);display('garage',false);
  display('backSolo',true);window.brakeGame.start();
 };
 function goGarage(){
@@ -40,11 +46,11 @@ function goGarage(){
 }
 $('backSolo').onclick=$('garageBtn').onclick=goGarage;
 window.addEventListener('request-start',()=>{
- if(!readmeDialog.open&&!localSession?.active&&$('localSetup').classList.contains('hidden')&&$('localResults').classList.contains('hidden'))$('solo').click();
+ if(!(readmeDialog.open||plateDialog.open)&&!localSession?.active&&$('localSetup').classList.contains('hidden')&&$('localResults').classList.contains('hidden'))$('solo').click();
 });
 window.addEventListener('request-retry',()=>$('solo').click());
 window.addEventListener('keydown',event=>{
- if(readmeDialog.open||!['ArrowLeft','ArrowRight'].includes(event.code)||$('garage').classList.contains('hidden'))return;
+ if((readmeDialog.open||plateDialog.open)||!['ArrowLeft','ArrowRight'].includes(event.code)||$('garage').classList.contains('hidden'))return;
  event.preventDefault();cycleVehicle(event.code==='ArrowLeft'?-1:1);
 });
 window.addEventListener('game-event',event=>{

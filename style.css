@@ -8,3 +8,5 @@
 @media(max-width:600px){.readme-dialog.panel{padding:22px 20px}.readme-stance h3{font-size:17px}}
 
 .local-actions{display:flex;justify-content:center;gap:10px;margin-top:12px}.local-actions button{min-width:145px}
+
+.plate-button{display:block;margin:12px auto 0;padding:5px 12px;border:1px solid #ffffff35;border-radius:5px;background:#1b171b80;color:var(--muted);font:12px system-ui;letter-spacing:2px}.plate-button:hover{color:var(--gold);border-color:var(--gold)}.plate-dialog.panel{width:min(360px,calc(100vw - 32px))}.plate-input,.seat-plate{border:1px solid #ffffff35;border-radius:6px;background:#171018cc;color:var(--paper);font:14px system-ui;text-align:center;letter-spacing:2px;padding:9px;outline:none}.plate-input{width:100%;margin-bottom:20px}.plate-input:focus,.seat-plate:focus{border-color:var(--gold)}.plate-dialog .accent-btn{width:100%}.seat-plate{margin:0 14px 12px;min-width:0;font-size:12px;padding:6px}

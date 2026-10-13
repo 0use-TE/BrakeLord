@@ -1,15 +1,16 @@
 // Small contiguous partitions (at most four cars) keep every group within view.
-export const VIEW_LIMITS={split:32,merge:20,settle:.35};
+export const VIEW_LIMITS={split:32,settle:.35};
 const key=groups=>groups.map(g=>g.join(',')).join('|');
 export class DynamicViews{
  constructor(ids){this.order=new Map(ids.map((id,i)=>[id,i]));this.groups=[ids.slice()];this.pending=null;this.pendingTime=0;}
  update(players,dt){
   const previous=new Map(this.groups.flatMap((g,i)=>g.map(id=>[id,i])));
-  const crashed=players.filter(p=>p.crashed),running=players.filter(p=>!p.crashed).sort((a,b)=>a.z-b.z);
+  const crashed=players.filter(p=>p.crashed),running=players.filter(p=>!p.crashed).sort((a,b)=>previous.get(a.id)-previous.get(b.id)||a.z-b.z);
   let best=null;
   for(let cuts=0;cuts<2**Math.max(0,running.length-1);cuts++){
    const groups=[];for(let i=0;i<running.length;i++){if(i===0||(cuts&(1<<(i-1))))groups.push([]);groups.at(-1).push(running[i]);}
-   if(groups.some(g=>g.at(-1).z-g[0].z>(g.every(p=>previous.get(p.id)===previous.get(g[0].id))?VIEW_LIMITS.split:VIEW_LIMITS.merge)))continue;
+   // A new pane may subdivide an existing group, but never reunites separate panes.
+   if(groups.some(g=>!g.every(p=>previous.get(p.id)===previous.get(g[0].id))||g.at(-1).z-g[0].z>VIEW_LIMITS.split))continue;
    const stable=groups.reduce((sum,g)=>sum+g.reduce((n,p,i)=>n+g.slice(i+1).filter(q=>previous.get(q.id)===previous.get(p.id)).length,0),0);
    const separation=groups.slice(1).reduce((sum,g,i)=>sum+g[0].z-groups[i].at(-1).z,0);
    if(!best||groups.length<best.groups.length||groups.length===best.groups.length&&(stable>best.stable||stable===best.stable&&separation>best.separation))best={groups,stable,separation};

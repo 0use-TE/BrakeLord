@@ -1,9 +1,12 @@
+import {normalizePlate,seatPlate} from './shared/plates.js';
 import { VEHICLES, vehicleById } from './shared/simulation.js';
 import { LocalMatch } from './shared/local-match.js';
 import { DEFAULT_KEYS, bindingsFromCodes, assignBinding } from './shared/key-bindings.js';
 const $=id=>document.getElementById(id);
 export function setupLocal({display,showGarage,currentVehicle}){
  let joined=[true,true,false,false],configured=false,count=2,ids=Array(4).fill(VEHICLES[0].id),match=null,frame=null,lastDraw=0,padLayout='',padNodes=new Map,viewNodes=[];
+ let plates=Array.from({length:4},(_,i)=>seatPlate(i));try{const saved=JSON.parse(localStorage.getItem('zun-local-plates')||'null');if(Array.isArray(saved))plates=plates.map((p,i)=>normalizePlate(saved[i],p));}catch{}
+ const withPlates=players=>players.map(p=>({...p,plate:plates[Number(p.id.split('-').at(-1))]}));
  const storageKey='zun-local-key-bindings-v1';let bindings=bindingsFromCodes(),recording=null,suppressKeyUp=null;
  try{const saved=localStorage.getItem(storageKey);if(saved)bindings=bindingsFromCodes(JSON.parse(saved));}catch{}
  function saveBindings(){try{localStorage.setItem(storageKey,JSON.stringify(bindings.map(key=>key.code)));}catch{}}
@@ -28,16 +31,19 @@ export function setupLocal({display,showGarage,currentVehicle}){
     const name=document.createElement('b');name.textContent=v.name;
     const next=document.createElement('button');next.textContent='›';next.setAttribute('aria-label','P'+(i+1)+'下一辆');
     const cycle=d=>{const index=VEHICLES.findIndex(v=>v.id===ids[i]);ids[i]=VEHICLES[(index+d+VEHICLES.length)%VEHICLES.length].id;drawSetup();};prev.onclick=()=>cycle(-1);next.onclick=()=>cycle(1);picker.append(prev,name,next);card.append(picker);
+    const plate=document.createElement('input');plate.className='seat-plate';plate.value=plates[i];plate.maxLength=9;plate.setAttribute('aria-label','P'+(i+1)+'车牌号');
+    for(const type of ['keydown','keyup'])plate.addEventListener(type,event=>event.stopPropagation());
+    plate.onchange=()=>{plates[i]=normalizePlate(plate.value,seatPlate(i));plate.value=plates[i];try{localStorage.setItem('zun-local-plates',JSON.stringify(plates));}catch{}window.brakeGame?.setupSlots(ids.map((vehicleId,j)=>({vehicleId,joined:joined[j],plate:plates[j]})));};card.append(plate);
     const stats=document.createElement('div');stats.className='seat-stats';
     for(const [label,value,max] of [['极速',v.car.maxSpeedKmh+' km/h',v.car.maxSpeedKmh/260],['耐受',v.brake.breakForceN+' N',v.brake.breakForceN/2100],['制动',(v.brake.breakForceN*v.brake.decelPerNewton).toFixed(1)+' m/s²',v.brake.breakForceN*v.brake.decelPerNewton/13]]){const row=document.createElement('div');row.innerHTML='<span>'+label+'</span><b>'+value+'</b><i><em style="width:'+max*100+'%"></em></i>';stats.append(row);}card.append(stats);
     const key=document.createElement('button');key.className='seat-key'+(recording===i?' recording':'');key.setAttribute('aria-label','设置P'+(i+1)+'键位');key.innerHTML='<span>刹车键</span><kbd>'+(recording===i?'按键…':bindings[i].label)+'</kbd>';key.onclick=()=>{recording=i;$('localBindingMessage').textContent='P'+(i+1)+'：按一个键，Esc 取消';drawSetup();};card.append(key);
    }
    $('localVehicles').append(card);
   }
-  if(!$('localSetup').classList.contains('hidden'))window.brakeGame?.setupSlots(ids.map((vehicleId,i)=>({vehicleId,joined:joined[i]})));
+  if(!$('localSetup').classList.contains('hidden'))window.brakeGame?.setupSlots(ids.map((vehicleId,i)=>({vehicleId,joined:joined[i],plate:plates[i]})));
  }
  function openSetup(){
-  if(!configured){ids=Array(4).fill(currentVehicle());configured=true;}
+  if(!configured){const first=VEHICLES.findIndex(v=>v.id===currentVehicle());ids=VEHICLES.map((_,i)=>VEHICLES[(first+i)%VEHICLES.length].id);configured=true;}
   stop();display('garage',false);display('backSolo',false);display('localSetup',true);
   document.body.classList.add('local-preparing');window.brakeGame?.beginSetup();cancelRecording();
  }
@@ -96,7 +102,7 @@ export function setupLocal({display,showGarage,currentVehicle}){
  }
  function tick(dt){
   if(!match||frame===null)return;
-  const events=match.advance(dt);window.brakeGame.splitFrame(match.renderSnapshots(),events);
+  const events=match.advance(dt);window.brakeGame.splitFrame(withPlates(match.renderSnapshots()),events);
   if(match.finished&&window.brakeGame.splitComplete()){drawPads();finish();frame=null;return;}
  }
  window.addEventListener('local-frame',event=>tick(event.detail));
@@ -104,7 +110,7 @@ export function setupLocal({display,showGarage,currentVehicle}){
  window.addEventListener('local-layout',()=>{if(match&&frame!==null)drawPads();});
  function start(){
   if(!window.brakeGame||recording!==null||activeSeats().length<2)return;const seats=activeSeats();stop();count=seats.length;match=new LocalMatch(seats.map(i=>ids[i]),seats.map(i=>bindings[i]),seats);
-  window.brakeGame.beginSplit(match.snapshots());
+  window.brakeGame.beginSplit(withPlates(match.snapshots()));
   display('garage',false);display('backSolo',false);display('localRace',true);
   document.body.classList.add('local-racing');lastDraw=0;drawPads();frame=true;
  }

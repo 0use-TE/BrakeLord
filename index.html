@@ -107,7 +107,7 @@
 
 <section id="garage" class="garage-ui">
  <header class="garage-header"><h1>尊不住了</h1><div class="header-actions"><button id="openReadme" class="quiet-btn" aria-haspopup="dialog">游戏说明</button><button id="openLocal" class="quiet-btn">同屏对战</button></div></header>
- <div class="car-picker"><button id="prevCar" class="arrow-btn" aria-label="上一辆车">←</button><div><h2 id="carName">尊界 V800</h2><div id="carDots" class="car-dots"></div></div><button id="nextCar" class="arrow-btn" aria-label="下一辆车">→</button></div>
+ <div class="car-picker"><button id="prevCar" class="arrow-btn" aria-label="上一辆车">←</button><div><h2 id="carName">尊界 V800</h2><div id="carDots" class="car-dots"></div><button id="editPlate" class="plate-button" aria-haspopup="dialog"></button></div><button id="nextCar" class="arrow-btn" aria-label="下一辆车">→</button></div>
  <div class="garage-bottom"><button id="solo" class="accent-btn" disabled>加载中…</button><p id="garageError" role="status"></p></div>
 </section>
 <section id="localSetup" class="local-setup hidden" aria-label="同屏对战准备">
@@ -122,7 +122,8 @@
  <header class="readme-heading"><h2 id="readmeTitle">游戏说明</h2><button id="closeReadme" aria-label="关闭游戏说明" autofocus>×</button></header>
  <section class="readme-stance"><h3>强烈抵制尊界这种行为。</h3><p>性能与安全，应该靠真实表现说话。消费者的质疑应当得到正面回应。</p></section>
  <section><h3>怎么玩</h3><p>车辆自动加速，达到 100 km/h 后才能刹车。按住空格、鼠标左键或触屏加力，松开减力。首次刹车后，动力永久切断。</p><p>赛道全长 2 km，在路障前停住即为成功。踏板力度达到车型耐受极限会断裂，撞上路障也会失败。刹车初速度越高、刹停用时越短，得分越高。</p></section>
- <section><h3>同屏对战</h3><p>支持 2–4 人，加入玩家后各自选车。默认刹车键：P1 用 A，P2 用 L，P3 用 S，P4 用 K；点击键位即可修改，也支持小键盘。</p><p>开局共用视角，车距拉大后自动分屏，靠近后重新合并；撞车的玩家会获得独立视角。</p></section>
+ <section><h3>同屏对战</h3><p>支持 2–4 人，加入玩家后各自选车。默认刹车键：P1 用 A，P2 用 L，P3 用 S，P4 用 K；点击键位即可修改，也支持小键盘。</p><p>开局共用视角，车距拉大后自动分屏，分屏后保持独立，下局重新共享；撞车的玩家会获得独立视角。</p></section>
 </dialog>
+<dialog id="plateDialog" class="readme-dialog panel plate-dialog" aria-labelledby="plateTitle"><form id="plateForm"><header class="readme-heading"><h2 id="plateTitle">修改车牌</h2><button type="button" id="closePlate" aria-label="关闭">×</button></header><input id="plateInput" class="plate-input" aria-label="车牌号" maxlength="9" autocomplete="off" required><button class="accent-btn" type="submit">保存</button></form></dialog>
 <section id="localResults" class="local-results hidden"><h2>本局成绩</h2><div id="localRanks"></div><div class="local-actions"><button id="localAgain" class="accent-btn">再来一局</button><button id="localGarage" class="outline-btn">返回选人</button></div></section>
 <script type="module" src="./client.js"></script></body></html>
